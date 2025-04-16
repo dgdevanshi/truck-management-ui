@@ -107,22 +107,31 @@ plantflow/
 
 ### Key Directories and Files
 
-- **components/**: Reusable UI components like `LoadingSpinner`, `ResponsiveTable`, etc.
-- **features/**: Contains feature modules, each with its own Redux slice and service files:
-  - **auth/**: Authentication logic and API calls
-  - **operator/**: Operator dashboard functionality
-  - **reports/**: Reporting functionality
-  - **trucks/**: Truck management functionality
-  - **users/**: User management functionality
-  - **workflows/**: Workflow and checkpoint management
-- **layouts/**: Page layout components for different user roles
-- **pages/**: Page components organized by user role
-- **store/**: Redux store configuration
-- **utils/**: Utility functions including:
-  - **apiLogger.js**: Logging utilities for API calls
-  - **apiTest.js**: API connection testing utilities
-  - **checkpointUtils.js**: Utilities for checkpoint management
-  - **jwtDecode.js**: JWT token decoding utility
+\`\`\`
+plantflow/
+├─ public/               # Public assets
+├─ src/                  # Source code
+│  ├─ components/        # Reusable UI components
+│  ├─ features/          # Feature modules with Redux slices and services
+│  │  ├─ auth/           # Authentication feature
+│  │  ├─ operator/       # Operator dashboard feature
+│  │  ├─ reports/        # Reporting feature
+│  │  ├─ trucks/         # Truck management feature
+│  │  ├─ users/          # User management feature
+│  │  └─ workflows/      # Workflow management feature
+│  ├─ layouts/           # Page layout components
+│  ├─ pages/             # Page components
+│  │  ├─ admin/          # Admin pages
+│  │  ├─ auth/           # Authentication pages
+│  │  └─ operator/       # Operator pages
+│  ├─ store/             # Redux store configuration
+│  ├─ utils/             # Utility functions
+│  ├─ App.jsx            # Main application component
+│  ├─ index.css          # Global styles
+│  └─ main.jsx           # Application entry point
+├─ .env                  # Environment variables
+└─ vite.config.js        # Vite configuration
+\`\`\`
 
 ## User Roles
 
