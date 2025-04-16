@@ -15,25 +15,22 @@ const getHeaders = () => {
 // Get all operators
 const getOperators = async () => {
   try {
-    console.group("👥 API Call: Get Operators");
-    console.log(`GET ${API_URL}/users/operators`);
+    ("👥 API Call: Get Operators");
+    `GET ${API_URL}/users/operators`;
 
     const response = await axios.get(`${API_URL}/users/operators`, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Get Operators");
+    ("❌ API Error: Get Operators");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -41,25 +38,22 @@ const getOperators = async () => {
 // Update user
 const updateUser = async (userId, userData) => {
   try {
-    console.group("✏️ API Call: Update User");
-    console.log(`PATCH ${API_URL}/users/${userId}`, userData);
+    ("✏️ API Call: Update User");
+    `PATCH ${API_URL}/users/${userId}`, userData;
 
     const response = await axios.patch(`${API_URL}/users/${userId}`, userData, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Update User");
+    ("❌ API Error: Update User");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };

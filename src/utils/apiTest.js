@@ -6,34 +6,30 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 // Function to test API connectivity
 export const testApiConnection = async () => {
   try {
-    console.group("🔌 Testing API Connection");
-    console.log(`Testing connection to: ${API_URL}`);
+    ("🔌 Testing API Connection");
+    `Testing connection to: ${API_URL}`;
 
     // Try to access a simple endpoint that doesn't require auth
     const response = await axios.get(`${API_URL}/`);
 
-    console.log("API connection successful:", response.data);
-    console.groupEnd();
-
+    "API connection successful:", response.data;
     return {
       success: true,
       message: "Connected to API successfully",
       data: response.data,
     };
   } catch (error) {
-    console.group("🔌 Testing API Connection");
+    ("🔌 Testing API Connection");
     console.error("API connection failed:", error.message);
 
     if (error.response) {
-      console.log("Response status:", error.response.status);
-      console.log("Response data:", error.response.data);
+      "Response status:", error.response.status;
+      "Response data:", error.response.data;
     } else if (error.request) {
-      console.log("No response received. Request:", error.request);
+      "No response received. Request:", error.request;
     } else {
-      console.log("Error setting up request:", error.message);
+      "Error setting up request:", error.message;
     }
-
-    console.groupEnd();
 
     return {
       success: false,
@@ -52,11 +48,11 @@ export const checkApiEndpoints = async () => {
 
   const results = {};
 
-  console.group("🔍 Checking API Endpoints");
+  ("🔍 Checking API Endpoints");
 
   for (const endpoint of endpoints) {
     try {
-      console.log(`Testing ${endpoint.method} ${API_URL}${endpoint.url}`);
+      `Testing ${endpoint.method} ${API_URL}${endpoint.url}`;
 
       const response = await axios({
         method: endpoint.method,
@@ -69,9 +65,7 @@ export const checkApiEndpoints = async () => {
         data: response.data,
       };
 
-      console.log(
-        `✅ Success: ${endpoint.method} ${endpoint.url} - Status: ${response.status}`
-      );
+      `✅ Success: ${endpoint.method} ${endpoint.url} - Status: ${response.status}`;
     } catch (error) {
       results[endpoint.url] = {
         success: false,
@@ -79,15 +73,11 @@ export const checkApiEndpoints = async () => {
         error: error.message,
       };
 
-      console.log(
-        `❌ Failed: ${endpoint.method} ${endpoint.url} - ${error.message}`
-      );
+      `❌ Failed: ${endpoint.method} ${endpoint.url} - ${error.message}`;
     }
   }
 
-  console.log("API endpoints check results:", results);
-  console.groupEnd();
-
+  "API endpoints check results:", results;
   return results;
 };
 
@@ -104,8 +94,8 @@ export const testAuthentication = async () => {
   }
 
   try {
-    console.group("🔐 Testing Authentication");
-    console.log("Testing authentication with current token");
+    ("🔐 Testing Authentication");
+    ("Testing authentication with current token");
 
     // Try to access a protected endpoint
     const response = await axios.get(`${API_URL}/trucks/status`, {
@@ -114,9 +104,7 @@ export const testAuthentication = async () => {
       },
     });
 
-    console.log("Authentication successful:", response.status);
-    console.groupEnd();
-
+    "Authentication successful:", response.status;
     return {
       success: true,
       message: "Authentication successful",
@@ -126,11 +114,9 @@ export const testAuthentication = async () => {
     console.error("Authentication test failed:", error.message);
 
     if (error.response) {
-      console.log("Response status:", error.response.status);
-      console.log("Response data:", error.response.data);
+      "Response status:", error.response.status;
+      "Response data:", error.response.data;
     }
-
-    console.groupEnd();
 
     return {
       success: false,

@@ -40,8 +40,8 @@ function App() {
   // For debugging - log the user object whenever it changes
   useEffect(() => {
     if (user) {
-      console.log("Current user:", user);
-      console.log("User role:", user.role);
+      "Current user:", user;
+      "User role:", user.role;
     }
   }, [user]);
 
@@ -59,10 +59,8 @@ function App() {
     }
 
     if (allowedRoles && !allowedRoles.includes(user?.role)) {
-      console.log(
-        `Access denied: User role ${user?.role} not in allowed roles:`,
-        allowedRoles
-      );
+      `Access denied: User role ${user?.role} not in allowed roles:`,
+        allowedRoles;
       return (
         <Navigate
           to={user?.role === "admin" ? "/admin" : "/operator"}

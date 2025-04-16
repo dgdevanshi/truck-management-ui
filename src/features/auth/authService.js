@@ -15,11 +15,12 @@ const getHeaders = () => {
 // Login user
 const login = async (userData) => {
   try {
-    console.group("🔑 API Call: Login");
-    console.log(`POST ${API_URL}/login`, {
-      email: userData.email,
-      password: "[HIDDEN]",
-    });
+    ("🔑 API Call: Login");
+    `POST ${API_URL}/login`,
+      {
+        email: userData.email,
+        password: "[HIDDEN]",
+      };
 
     // Simple direct axios call
     const response = await axios.post(
@@ -33,10 +34,8 @@ const login = async (userData) => {
       }
     );
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     if (response.data && response.data.access_token) {
       // Store the JWT token
       const token = response.data.access_token;
@@ -44,7 +43,7 @@ const login = async (userData) => {
 
       // Decode the JWT token to get user information
       const decodedToken = decodeJWT(token);
-      console.log("Decoded token:", decodedToken);
+      "Decoded token:", decodedToken;
 
       if (decodedToken) {
         // Use the information from the token
@@ -55,7 +54,7 @@ const login = async (userData) => {
           name: decodedToken.name || userData.email.split("@")[0],
         };
 
-        console.log("User object created from token:", user);
+        "User object created from token:", user;
         localStorage.setItem("user", JSON.stringify(user));
         return user;
       } else {
@@ -73,12 +72,11 @@ const login = async (userData) => {
 
     return null;
   } catch (error) {
-    console.group("❌ API Error: Login");
+    ("❌ API Error: Login");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -86,35 +84,33 @@ const login = async (userData) => {
 // Register user
 const register = async (userData) => {
   try {
-    console.group("📝 API Call: Register");
-    console.log(`POST ${API_URL}/register`, {
-      ...userData,
-      password: "[HIDDEN]",
-    });
+    ("📝 API Call: Register");
+    `POST ${API_URL}/register`,
+      {
+        ...userData,
+        password: "[HIDDEN]",
+      };
 
     const response = await axios.post(`${API_URL}/register`, userData, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Register");
+    ("❌ API Error: Register");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
 
 // Logout user
 const logout = () => {
-  console.log("Logging out user");
+  ("Logging out user");
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 };

@@ -22,7 +22,7 @@ export const getCheckpointName = (checkpointId) => {
 
 // Get next checkpoint ID in the workflow
 export const getNextCheckpointId = (currentCheckpointId) => {
-  const id = parseInt(currentCheckpointId, 10);
+  const id = Number.parseInt(currentCheckpointId, 10);
 
   // If we're at the last checkpoint (8), there is no next checkpoint
   if (id === 8) return null;
@@ -31,10 +31,21 @@ export const getNextCheckpointId = (currentCheckpointId) => {
   return id + 1;
 };
 
+// Get previous checkpoint ID in the workflow
+export const getPreviousCheckpointId = (currentCheckpointId) => {
+  const id = Number.parseInt(currentCheckpointId, 10);
+
+  // If we're at the first checkpoint (1), there is no previous checkpoint
+  if (id === 1) return null;
+
+  // Otherwise, return the previous checkpoint in sequence
+  return id - 1;
+};
+
 // Get all checkpoints as an array of objects
 export const getAllCheckpoints = () => {
   return Object.entries(CHECKPOINTS).map(([id, name]) => ({
-    id: parseInt(id, 10),
+    id: Number.parseInt(id, 10),
     name,
   }));
 };
@@ -46,7 +57,7 @@ export const groupTrucksByCheckpoint = (trucks) => {
   // Initialize all checkpoints with 0 trucks
   Object.keys(CHECKPOINTS).forEach((id) => {
     checkpointCounts[id] = {
-      id: parseInt(id, 10),
+      id: Number.parseInt(id, 10),
       name: CHECKPOINTS[id],
       count: 0,
       trucks: [],

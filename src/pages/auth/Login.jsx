@@ -77,14 +77,14 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Login form submitted");
+    ("Login form submitted");
 
     if (!validate()) {
-      console.log("Form validation failed", errors);
+      "Form validation failed", errors;
       return;
     }
 
-    console.log("Dispatching login action");
+    ("Dispatching login action");
     dispatch(login(formData));
   };
 

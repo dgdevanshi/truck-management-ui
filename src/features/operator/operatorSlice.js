@@ -22,9 +22,9 @@ export const getCheckpointTrucks = createAsyncThunk(
   "operator/getTrucks",
   async (_, thunkAPI) => {
     try {
-      console.log("Calling getCheckpointTrucks from operatorService");
+      ("Calling getCheckpointTrucks from operatorService");
       const result = await operatorService.getCheckpointTrucks();
-      console.log("getCheckpointTrucks result:", result);
+      "getCheckpointTrucks result:", result;
       return result;
     } catch (error) {
       console.error("Error in getCheckpointTrucks thunk:", error);
@@ -70,13 +70,15 @@ export const logTruckAction = createAsyncThunk(
 
       // Validate that we have a valid action
       if (logData.action !== "checkin" && logData.action !== "checkout") {
-        return thunkAPI.rejectWithValue("Invalid action - must be checkin or checkout");
+        return thunkAPI.rejectWithValue(
+          "Invalid action - must be checkin or checkout"
+        );
       }
 
-      console.log("Sending truck action with data:", logData);
+      "Sending truck action with data:", logData;
 
       const result = await operatorService.logTruckAction(logData);
-      
+
       // After successful action, refresh the truck list
       thunkAPI.dispatch(getCheckpointTrucks());
       return result;
@@ -101,7 +103,7 @@ export const createTruck = createAsyncThunk(
         truckData.checkpoint_id = 1;
       }
 
-      console.log("Creating truck with data:", truckData);
+      "Creating truck with data:", truckData;
 
       const result = await operatorService.createTruck(truckData);
       // After successful creation, refresh the truck list

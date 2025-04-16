@@ -13,8 +13,8 @@ import {
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ResponsiveTable from "../../components/ResponsiveTable";
 import {
-  getNextCheckpointId,
   getCheckpointName,
+  getNextCheckpointId,
 } from "../../utils/checkpointUtils";
 
 const Dashboard = () => {
@@ -28,7 +28,6 @@ const Dashboard = () => {
     isError,
     message,
   } = useSelector((state) => state.operator);
-  const { user } = useSelector((state) => state.auth);
 
   const [showCheckInForm, setShowCheckInForm] = useState(false);
   const [showCheckOutForm, setShowCheckOutForm] = useState(false);
@@ -44,40 +43,22 @@ const Dashboard = () => {
     checkpoint_id: 1, // Default to checkpoint 1 (entry gate)
   });
   const [hasNoCheckpoint, setHasNoCheckpoint] = useState(false);
+  const [nextCheckpoint, setNextCheckpoint] = useState(null);
 
   useEffect(() => {
-    // Function to load trucks data
-    const loadTrucks = async () => {
-      if (!hasNoCheckpoint) {
-        try {
-          await dispatch(getCheckpointTrucks()).unwrap();
-        } catch (error) {
-          console.error("Error fetching checkpoint trucks:", error);
-        }
-      }
-    };
-
     // Get assigned checkpoint and trucks
     dispatch(getAssignedCheckpoint())
       .unwrap()
       .then((checkpointData) => {
-        console.log("Successfully got assigned checkpoint:", checkpointData);
+        "Successfully got assigned checkpoint:", checkpointData;
+        setHasNoCheckpoint(false);
 
-        // Check if the checkpoint has a valid ID using either property name
-        const checkpointId =
-          checkpointData?.checkpoint_id || checkpointData?.id;
+        // Calculate the next checkpoint in the workflow
+        const nextCp = getNextCheckpointId(checkpointData.checkpoint_id);
+        setNextCheckpoint(nextCp);
 
-        if (!checkpointId) {
-          console.warn(
-            "Checkpoint data received but no valid checkpoint ID found:",
-            checkpointData
-          );
-          setHasNoCheckpoint(true);
-        } else {
-          setHasNoCheckpoint(false);
-          // Load trucks immediately after getting checkpoint
-          loadTrucks();
-        }
+        // Now fetch trucks at this checkpoint
+        dispatch(getCheckpointTrucks());
       })
       .catch((error) => {
         console.error("Error in getAssignedCheckpoint:", error);
@@ -94,7 +75,13 @@ const Dashboard = () => {
 
     // Set up polling for real-time updates only if we have a checkpoint
     const interval = setInterval(() => {
-      loadTrucks();
+      if (!hasNoCheckpoint) {
+        try {
+          dispatch(getCheckpointTrucks());
+        } catch (error) {
+          console.error("Error in polling getCheckpointTrucks:", error);
+        }
+      }
     }, 15000); // Poll every 15 seconds
 
     return () => {
@@ -140,99 +127,76 @@ const Dashboard = () => {
     }));
   };
 
-  // Update the handleCheckIn function to handle the case when a truck doesn't have a checkpoint assigned
   const handleCheckIn = (e) => {
     e.preventDefault();
 
-    // Check if checkpoint exists and has a valid ID
-    if (!checkpoint) {
+    if (!checkpoint || !checkpoint.checkpoint_id) {
       toast.error("No checkpoint assigned to operator. Cannot check in truck.");
       return;
     }
 
-    // Access checkpoint_id correctly from the checkpoint object
-    const checkpointId = checkpoint.checkpoint_id || checkpoint.id;
-
-    if (!checkpointId) {
-      toast.error("No checkpoint ID found. Cannot check in truck.");
-      return;
-    }
-
-    // Make sure truckId is not empty
-    if (!formData.truckId) {
-      toast.error("Please enter a truck ID");
-      return;
-    }
-
-    // Format the data according to the API requirements
     const actionData = {
-      truck_id: parseInt(formData.truckId, 10) || formData.truckId, // Support both numeric and string IDs
-      checkpoint_id: parseInt(checkpointId, 10), // Ensure numeric ID and use the correct property
-      action: "checkin", // Backend expects "checkin" not "check_in"
-      notes: formData.notes || "",
+      truck_id: formData.truckId,
+      checkpoint_id: checkpoint.checkpoint_id, // Use the operator's assigned checkpoint
+      action: "checkin", // Use "checkin" instead of "check_in" for the API
+      notes: formData.notes,
     };
 
-    console.log("Check-in data:", actionData);
+    "Check-in data:", actionData;
 
     dispatch(logTruckAction(actionData))
       .unwrap()
       .then(() => {
+        toast.success(
+          `Truck checked in successfully at ${getCheckpointName(
+            checkpoint.checkpoint_id
+          )}!`
+        );
         setFormData({ truckId: "", notes: "" });
         setShowCheckInForm(false);
-        toast.success(
-          `Truck checked in successfully at ${getCheckpointName(checkpointId)}`
-        );
+
+        // Refresh the truck list
+        dispatch(getCheckpointTrucks());
       })
       .catch((error) => {
+        console.error("Check-in error:", error);
         toast.error(`Failed to check in truck: ${error}`);
       });
   };
 
-  // Update the handleCheckOut function to explicitly include checkpoint_id
   const handleCheckOut = (e) => {
     e.preventDefault();
 
-    // Check if checkpoint exists and has a valid ID
-    if (!checkpoint) {
+    if (!checkpoint || !checkpoint.checkpoint_id) {
       toast.error("No checkpoint assigned. Cannot check out truck.");
       return;
     }
 
-    // Access checkpoint_id correctly from the checkpoint object
-    const checkpointId = checkpoint.checkpoint_id || checkpoint.id;
-
-    if (!checkpointId) {
-      toast.error("No checkpoint ID found. Cannot check out truck.");
-      return;
-    }
-
-    // Make sure truckId is not empty
-    if (!formData.truckId) {
-      toast.error("Please select a truck");
-      return;
-    }
-
     const actionData = {
-      truck_id: parseInt(formData.truckId, 10) || formData.truckId, // Support both numeric and string IDs
-      checkpoint_id: parseInt(checkpointId, 10), // Ensure numeric ID and use the correct property
-      action: "checkout", // Backend expects "checkout" not "check_out"
-      notes: formData.notes || "",
+      truck_id: formData.truckId,
+      checkpoint_id: checkpoint.checkpoint_id + 1, // Use the operator's assigned checkpoint
+      action: "checkout", // Use "checkout" instead of "check_out" for the API
+      notes: formData.notes,
     };
 
-    console.log("Check-out data:", actionData);
+    "Check-out data:", actionData;
 
     dispatch(logTruckAction(actionData))
       .unwrap()
       .then(() => {
-        setFormData({ truckId: "", notes: "" });
-        setShowCheckOutForm(false);
         toast.success(
           `Truck checked out successfully from ${getCheckpointName(
-            checkpointId
-          )}`
+            checkpoint.checkpoint_id
+          )}!`
         );
+        setFormData({ truckId: "", notes: "" });
+        setShowCheckOutForm(false);
+
+        // Refresh the truck list
+        dispatch(getCheckpointTrucks());
       })
       .catch((error) => {
+        console.error("Check-out error:", error);
         toast.error(`Failed to check out truck: ${error}`);
       });
   };
@@ -240,18 +204,16 @@ const Dashboard = () => {
   const handleCreateTruck = (e) => {
     e.preventDefault();
 
-    // Format data for the API
+    // Always create trucks at checkpoint 1 (Entry gate)
     const truckData = {
       ...createTruckData,
-      // Always start new trucks at checkpoint 1 (entry gate)
-      checkpoint_id: 1,
+      checkpoint_id: 1, // Always start at Entry gate
     };
-
-    console.log("Creating truck with data:", truckData);
 
     dispatch(createTruck(truckData))
       .unwrap()
       .then(() => {
+        toast.success("New truck created successfully!");
         setCreateTruckData({
           truckIdentifier: "",
           status: "in_progress",
@@ -259,10 +221,11 @@ const Dashboard = () => {
           checkpoint_id: 1, // Maintain the default checkpoint when resetting
         });
         setShowCreateTruckForm(false);
-        toast.success(`New truck created at ${getCheckpointName(1)}`);
 
-        // Refresh truck list
-        dispatch(getCheckpointTrucks());
+        // Only refresh the truck list if the operator is at checkpoint 1
+        if (checkpoint && checkpoint.checkpoint_id === 1) {
+          dispatch(getCheckpointTrucks());
+        }
       })
       .catch((error) => {
         toast.error(`Failed to create truck: ${error}`);
@@ -288,7 +251,7 @@ const Dashboard = () => {
     }
   };
 
-  // Update the tableHeaders to show the current checkpoint information
+  // Update the table headers to show the current checkpoint information
   const tableHeaders = [
     { key: "identifier", label: "Truck ID" },
     {
@@ -311,35 +274,14 @@ const Dashboard = () => {
     {
       key: "current_checkpoint",
       label: "Current Checkpoint",
-      render: (truck) => {
-        // Handle different property names from the API
-        const checkpointId =
-          truck.checkpoint_id ||
-          truck.currentCheckpointId ||
-          truck.current_checkpoint_id;
-        return (
-          getCheckpointName(checkpointId) ||
-          truck.current_checkpoint_name ||
-          truck.checkpoint ||
-          "-"
-        );
-      },
+      render: (truck) => getCheckpointName(truck.checkpoint_id) || "-",
     },
     {
       key: "next_checkpoint",
       label: "Next Checkpoint",
       render: (truck) => {
-        // Handle different property names from the API
-        const currentCheckpointId =
-          truck.checkpoint_id ||
-          truck.currentCheckpointId ||
-          truck.current_checkpoint_id;
-        const nextCheckpointId = getNextCheckpointId(currentCheckpointId);
-        return (
-          getCheckpointName(nextCheckpointId) ||
-          truck.next_checkpoint_name ||
-          "-"
-        );
+        const nextCp = getNextCheckpointId(truck.checkpoint_id);
+        return nextCp ? getCheckpointName(nextCp) : "Final Checkpoint";
       },
     },
     {
@@ -402,17 +344,10 @@ const Dashboard = () => {
           ) : (
             <>
               Checkpoint:{" "}
-              {checkpoint?.name ||
-                checkpoint?.checkpoint_name ||
-                getCheckpointName(checkpoint?.checkpoint_id) ||
-                "Loading..."}
-              {(checkpoint?.description ||
-                checkpoint?.checkpoint_description) && (
+              {getCheckpointName(checkpoint?.checkpoint_id) || "Loading..."}
+              {checkpoint?.description && (
                 <span className="ml-2 text-sm text-gray-500">
-                  (
-                  {checkpoint?.description ||
-                    checkpoint?.checkpoint_description}
-                  )
+                  ({checkpoint.description})
                 </span>
               )}
             </>
@@ -420,14 +355,17 @@ const Dashboard = () => {
         </h2>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-4">
-          <button
-            onClick={() => setShowCreateTruckForm(true)}
-            disabled={isActionLoading}
-            className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
-          >
-            <i className="ri-truck-line mr-2"></i>
-            Create New Truck
-          </button>
+          {/* Only show Create Truck button if operator is at Entry Gate (checkpoint 1) */}
+          {checkpoint && checkpoint.checkpoint_id === 1 && (
+            <button
+              onClick={() => setShowCreateTruckForm(true)}
+              disabled={isActionLoading}
+              className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
+            >
+              <i className="ri-truck-line mr-2"></i>
+              Create New Truck
+            </button>
+          )}
           <button
             onClick={() => setShowCheckInForm(true)}
             disabled={isActionLoading}
@@ -445,12 +383,25 @@ const Dashboard = () => {
             Check-Out Truck
           </button>
         </div>
+
+        {/* Show next checkpoint information */}
+        {nextCheckpoint && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-md">
+            <p className="text-sm text-gray-600">
+              <i className="ri-arrow-right-line mr-1"></i>
+              When trucks are checked in, they will move to:{" "}
+              <span className="font-medium">
+                {getCheckpointName(nextCheckpoint)}
+              </span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Current Trucks */}
       <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-gray-800">
-          Current Trucks
+          Trucks at {getCheckpointName(checkpoint?.checkpoint_id)}
         </h2>
 
         {isLoading ? (
@@ -483,34 +434,14 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(() => {
-                        // Handle different property names from the API
-                        const checkpointId =
-                          truck.checkpoint_id ||
-                          truck.currentCheckpointId ||
-                          truck.current_checkpoint_id;
-                        return (
-                          getCheckpointName(checkpointId) ||
-                          truck.current_checkpoint_name ||
-                          truck.checkpoint ||
-                          "-"
-                        );
-                      })()}
+                      {getCheckpointName(truck.checkpoint_id) || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {(() => {
-                        // Handle different property names from the API
-                        const currentCheckpointId =
-                          truck.checkpoint_id ||
-                          truck.currentCheckpointId ||
-                          truck.current_checkpoint_id;
-                        const nextCheckpointId =
-                          getNextCheckpointId(currentCheckpointId);
-                        return (
-                          getCheckpointName(nextCheckpointId) ||
-                          truck.next_checkpoint_name ||
-                          "-"
-                        );
+                        const nextCp = getNextCheckpointId(truck.checkpoint_id);
+                        return nextCp
+                          ? getCheckpointName(nextCp)
+                          : "Final Checkpoint";
                       })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -520,7 +451,9 @@ const Dashboard = () => {
                 );
               }
             }}
-            emptyMessage="No trucks at this checkpoint"
+            emptyMessage={`No trucks at ${getCheckpointName(
+              checkpoint?.checkpoint_id
+            )}`}
           />
         )}
       </div>
@@ -615,7 +548,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 md:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">
-              Check-In Truck
+              Check-In Truck at {getCheckpointName(checkpoint?.checkpoint_id)}
             </h2>
             <form onSubmit={handleCheckIn}>
               <div className="mb-4">
@@ -655,6 +588,18 @@ const Dashboard = () => {
                 ></textarea>
               </div>
 
+              {nextCheckpoint && (
+                <div className="mb-4 p-3 bg-yellow-50 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    <i className="ri-information-line mr-1"></i>
+                    After check-in, this truck will move to:{" "}
+                    <span className="font-medium">
+                      {getCheckpointName(nextCheckpoint)}
+                    </span>
+                  </p>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row justify-end gap-2">
                 <button
                   type="button"
@@ -681,7 +626,8 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 md:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">
-              Check-Out Truck
+              Check-Out Truck from{" "}
+              {getCheckpointName(checkpoint?.checkpoint_id)}
             </h2>
             <form onSubmit={handleCheckOut}>
               <div className="mb-4">

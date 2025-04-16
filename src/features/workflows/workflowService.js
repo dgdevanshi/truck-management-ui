@@ -15,25 +15,22 @@ const getHeaders = () => {
 // Get all workflows
 const getWorkflows = async () => {
   try {
-    console.group("🔄 API Call: Get All Workflows");
-    console.log(`GET ${API_URL}/workflows/`);
+    ("🔄 API Call: Get All Workflows");
+    `GET ${API_URL}/workflows/`;
 
     const response = await axios.get(`${API_URL}/workflows/`, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Get All Workflows");
+    ("❌ API Error: Get All Workflows");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -41,25 +38,22 @@ const getWorkflows = async () => {
 // Get workflow by ID
 const getWorkflowById = async (workflowId) => {
   try {
-    console.group("🔄 API Call: Get Workflow By ID");
-    console.log(`GET ${API_URL}/workflows/${workflowId}`);
+    ("🔄 API Call: Get Workflow By ID");
+    `GET ${API_URL}/workflows/${workflowId}`;
 
     const response = await axios.get(`${API_URL}/workflows/${workflowId}`, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Get Workflow By ID");
+    ("❌ API Error: Get Workflow By ID");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -67,25 +61,22 @@ const getWorkflowById = async (workflowId) => {
 // Get all checkpoints
 const getCheckpoints = async () => {
   try {
-    console.group("🚩 API Call: Get All Checkpoints");
-    console.log(`GET ${API_URL}/checkpoints/`);
+    ("🚩 API Call: Get All Checkpoints");
+    `GET ${API_URL}/checkpoints/`;
 
     const response = await axios.get(`${API_URL}/workflows/checkpoints`, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Get All Checkpoints");
+    ("❌ API Error: Get All Checkpoints");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -93,25 +84,22 @@ const getCheckpoints = async () => {
 // Create workflow
 const createWorkflow = async (workflowData) => {
   try {
-    console.group("🔄 API Call: Create Workflow");
-    console.log(`POST ${API_URL}/workflows/`, workflowData);
+    ("🔄 API Call: Create Workflow");
+    `POST ${API_URL}/workflows/`, workflowData;
 
     const response = await axios.post(`${API_URL}/workflows/`, workflowData, {
       headers: getHeaders(),
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Create Workflow");
+    ("❌ API Error: Create Workflow");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -119,8 +107,8 @@ const createWorkflow = async (workflowData) => {
 // Create checkpoint
 const createCheckpoint = async (checkpointData) => {
   try {
-    console.group("🚩 API Call: Create Checkpoint");
-    console.log(`POST ${API_URL}/workflows/checkpoints`, checkpointData);
+    ("🚩 API Call: Create Checkpoint");
+    `POST ${API_URL}/workflows/checkpoints`, checkpointData;
 
     const response = await axios.post(
       `${API_URL}/workflows/checkpoints`,
@@ -130,18 +118,15 @@ const createCheckpoint = async (checkpointData) => {
       }
     );
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Create Checkpoint");
+    ("❌ API Error: Create Checkpoint");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -149,8 +134,8 @@ const createCheckpoint = async (checkpointData) => {
 // Update workflow
 const updateWorkflow = async (workflowId, workflowData) => {
   try {
-    console.group("✏️ API Call: Update Workflow");
-    console.log(`PATCH ${API_URL}/workflows/${workflowId}`, workflowData);
+    ("✏️ API Call: Update Workflow");
+    `PATCH ${API_URL}/workflows/${workflowId}`, workflowData;
 
     const response = await axios.patch(
       `${API_URL}/workflows/${workflowId}`,
@@ -160,18 +145,15 @@ const updateWorkflow = async (workflowId, workflowData) => {
       }
     );
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Update Workflow");
+    ("❌ API Error: Update Workflow");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
@@ -179,11 +161,8 @@ const updateWorkflow = async (workflowId, workflowData) => {
 // Update checkpoint
 const updateCheckpoint = async (checkpointId, checkpointData) => {
   try {
-    console.group("✏️ API Call: Update Checkpoint");
-    console.log(
-      `PATCH ${API_URL}/workflows/checkpoints/${checkpointId}`,
-      checkpointData
-    );
+    ("✏️ API Call: Update Checkpoint");
+    `PATCH ${API_URL}/workflows/checkpoints/${checkpointId}`, checkpointData;
 
     const response = await axios.patch(
       `${API_URL}/workflows/checkpoints/${checkpointId}`,
@@ -193,18 +172,15 @@ const updateCheckpoint = async (checkpointId, checkpointData) => {
       }
     );
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Update Checkpoint");
+    ("❌ API Error: Update Checkpoint");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };

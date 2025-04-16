@@ -15,14 +15,14 @@ const getHeaders = () => {
 // Get truck turnaround time report
 const getTurnaroundReport = async (startDate, endDate) => {
   try {
-    console.group("📊 API Call: Get Turnaround Report");
+    ("📊 API Call: Get Turnaround Report");
 
     // Format dates as ISO strings if they aren't already
     const start =
       startDate instanceof Date ? startDate.toISOString() : startDate;
     const end = endDate instanceof Date ? endDate.toISOString() : endDate;
 
-    console.log(`GET ${API_URL}/reports/turnaround?start=${start}&end=${end}`);
+    `GET ${API_URL}/reports/turnaround?start=${start}&end=${end}`;
 
     const response = await axios.get(`${API_URL}/reports/turnaround`, {
       headers: getHeaders(),
@@ -32,18 +32,15 @@ const getTurnaroundReport = async (startDate, endDate) => {
       },
     });
 
-    console.log("Response Status:", response.status);
-    console.log("Response Data:", response.data);
-    console.groupEnd();
-
+    "Response Status:", response.status;
+    "Response Data:", response.data;
     return response.data;
   } catch (error) {
-    console.group("❌ API Error: Get Turnaround Report");
+    ("❌ API Error: Get Turnaround Report");
     console.error("Error Status:", error.response?.status);
     console.error("Error Data:", error.response?.data);
     console.error("Error Message:", error.message);
     console.error("Full Error:", error);
-    console.groupEnd();
     throw error;
   }
 };
