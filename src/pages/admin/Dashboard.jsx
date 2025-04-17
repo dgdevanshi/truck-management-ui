@@ -50,7 +50,7 @@ const Dashboard = () => {
   const selectedCheckpointTrucks = selectedCheckpoint
     ? checkpointStats.find((cp) => cp.id === selectedCheckpoint)?.trucks || []
     : trucksArray.slice(0, 5); // Show first 5 trucks if no checkpoint is selected
-
+    
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-gray-800">Dashboard</h1>
@@ -66,9 +66,7 @@ const Dashboard = () => {
                 : "bg-white hover:bg-gray-50"
             }`}
             onClick={() =>
-              setSelectedCheckpoint(
-                checkpoint.id === selectedCheckpoint ? null : checkpoint.id
-              )
+              setSelectedCheckpoint(checkpoint.id === selectedCheckpoint ? null : checkpoint.id)
             }
           >
             <div className="flex items-center">

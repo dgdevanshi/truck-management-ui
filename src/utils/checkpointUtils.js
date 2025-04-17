@@ -11,7 +11,7 @@ const CHECKPOINTS = {
   5: "Material Handling",
   6: "Weigh Bridge",
   7: "Front Office",
-  8: "Entry Gate",
+  8: "Exit Gate",
 };
 
 // Get checkpoint name by ID
@@ -54,7 +54,7 @@ export const getAllCheckpoints = () => {
 export const groupTrucksByCheckpoint = (trucks) => {
   const checkpointCounts = {};
 
-  // Initialize all checkpoints with 0 trucks
+  // Initialize all checkpoints
   Object.keys(CHECKPOINTS).forEach((id) => {
     checkpointCounts[id] = {
       id: Number.parseInt(id, 10),
@@ -64,20 +64,19 @@ export const groupTrucksByCheckpoint = (trucks) => {
     };
   });
 
-  // Count trucks at each checkpoint
+  // Count trucks at each checkpoint by matching checkpoint name
   if (Array.isArray(trucks)) {
     trucks.forEach((truck) => {
-      // Get the checkpoint ID from the truck data
-      const checkpointId =
-        truck.checkpoint_id ||
-        truck.currentCheckpointId ||
-        truck.current_checkpoint_id ||
-        1; // Default to entry gate if not specified
+      const checkpointName = truck.checkpoint?.trim().toLowerCase();
 
-      // Convert to string for object key
+      // Find the matching ID from CHECKPOINTS
+      const matchingEntry = Object.entries(CHECKPOINTS).find(
+        ([, name]) => name.trim().toLowerCase() === checkpointName
+      );
+
+      const checkpointId = matchingEntry ? parseInt(matchingEntry[0], 10) : 1; // Default to Entry Gate (ID 1)
       const checkpointKey = checkpointId.toString();
 
-      // If this checkpoint exists in our mapping, increment its count
       if (checkpointCounts[checkpointKey]) {
         checkpointCounts[checkpointKey].count++;
         checkpointCounts[checkpointKey].trucks.push(truck);
@@ -85,6 +84,6 @@ export const groupTrucksByCheckpoint = (trucks) => {
     });
   }
 
-  // Convert to array for easier rendering
   return Object.values(checkpointCounts);
 };
+

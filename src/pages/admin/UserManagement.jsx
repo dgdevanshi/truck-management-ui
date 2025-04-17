@@ -55,18 +55,13 @@ const UserManagement = () => {
 
   // Show success/error messages and refresh the operator list when a new user is registered successfully
   useEffect(() => {
-    if (isSuccess) {
-      toast.success("User updated successfully!");
-      dispatch(resetUsers());
-    }
-
     if (isError) {
       toast.error(message || "An error occurred");
       dispatch(resetUsers());
     }
 
     if (isAuthSuccess) {
-      toast.success("User registered successfully!");
+      // toast.success("User registered successfully!");
       dispatch(getOperators());
       setShowRegisterForm(false);
       setRegisterData({

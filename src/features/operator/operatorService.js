@@ -53,9 +53,8 @@ const getCheckpointTrucks = async () => {
 
     // Filter trucks to only show those at the operator's checkpoint
     let trucks = Array.isArray(response.data) ? response.data : [];
-    console.log(trucks);
     trucks = trucks.filter(
-      (truck) => truck.checkpoint_id + 1 === operatorCheckpointId
+      (truck) => truck.checkpoint_id === operatorCheckpointId
     );
 
     // IMPORTANT: We no longer modify the checkpoint_id here

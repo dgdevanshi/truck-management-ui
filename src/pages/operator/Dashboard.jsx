@@ -44,6 +44,7 @@ const Dashboard = () => {
   });
   const [hasNoCheckpoint, setHasNoCheckpoint] = useState(false);
   const [nextCheckpoint, setNextCheckpoint] = useState(null);
+  const [selectedTruckId, setSelectedTruckId] = useState(null);
 
   useEffect(() => {
     // Get assigned checkpoint and trucks
@@ -73,43 +74,22 @@ const Dashboard = () => {
         }
       });
 
-    // Set up polling for real-time updates only if we have a checkpoint
-    const interval = setInterval(() => {
-      if (!hasNoCheckpoint) {
-        try {
-          dispatch(getCheckpointTrucks());
-        } catch (error) {
-          console.error("Error in polling getCheckpointTrucks:", error);
-        }
-      }
-    }, 15000); // Poll every 15 seconds
+    // // Set up polling for real-time updates only if we have a checkpoint
+    // const interval = setInterval(() => {
+    //   if (!hasNoCheckpoint) {
+    //     try {
+    //       dispatch(getCheckpointTrucks());
+    //     } catch (error) {
+    //       console.error("Error in polling getCheckpointTrucks:", error);
+    //     }
+    //   }
+    // }, 15000); // Poll every 15 seconds
 
     return () => {
-      clearInterval(interval);
+      // clearInterval(interval);
       dispatch(reset());
     };
   }, [dispatch, hasNoCheckpoint]);
-
-  // Show success/error messages as toasts
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success("Action completed successfully!");
-      dispatch(reset());
-    }
-
-    if (isError) {
-      if (
-        message === "No checkpoint assigned" ||
-        (typeof message === "string" &&
-          message.includes("No checkpoint assigned"))
-      ) {
-        setHasNoCheckpoint(true);
-      } else {
-        toast.error(message || "An error occurred");
-      }
-      dispatch(reset());
-    }
-  }, [isSuccess, isError, message, dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -130,14 +110,19 @@ const Dashboard = () => {
   const handleCheckIn = (e) => {
     e.preventDefault();
 
+    if (!selectedTruckId) {
+      toast.error("No truck selected for check-in.");
+      return;
+    }
+
     if (!checkpoint || !checkpoint.checkpoint_id) {
       toast.error("No checkpoint assigned to operator. Cannot check in truck.");
       return;
     }
 
     const actionData = {
-      truck_id: formData.truckId,
-      checkpoint_id: checkpoint.checkpoint_id, // Use the operator's assigned checkpoint
+      truck_id: selectedTruckId, // Use the selected truck ID from the state
+      checkpoint_id: nextCheckpoint, // Use the next assigned checkpoint
       action: "checkin", // Use "checkin" instead of "check_in" for the API
       notes: formData.notes,
     };
@@ -160,12 +145,17 @@ const Dashboard = () => {
       })
       .catch((error) => {
         console.error("Check-in error:", error);
-        toast.error(`Failed to check in truck: ${error}`);
+        toast.error(`Failed to check in truck`);
       });
   };
 
   const handleCheckOut = (e) => {
     e.preventDefault();
+
+    if (!selectedTruckId) {
+      toast.error("No truck selected for check-in.");
+      return;
+    }
 
     if (!checkpoint || !checkpoint.checkpoint_id) {
       toast.error("No checkpoint assigned. Cannot check out truck.");
@@ -173,8 +163,8 @@ const Dashboard = () => {
     }
 
     const actionData = {
-      truck_id: formData.truckId,
-      checkpoint_id: checkpoint.checkpoint_id + 1, // Use the operator's assigned checkpoint
+      truck_id: selectedTruckId,
+      checkpoint_id: checkpoint.checkpoint_id, // Use the operator's assigned checkpoint
       action: "checkout", // Use "checkout" instead of "check_out" for the API
       notes: formData.notes,
     };
@@ -184,11 +174,7 @@ const Dashboard = () => {
     dispatch(logTruckAction(actionData))
       .unwrap()
       .then(() => {
-        toast.success(
-          `Truck checked out successfully from ${getCheckpointName(
-            checkpoint.checkpoint_id
-          )}!`
-        );
+        toast.success(`Truck checked out successfully from ${getCheckpointName(checkpoint.checkpoint_id)}!`);
         setFormData({ truckId: "", notes: "" });
         setShowCheckOutForm(false);
 
@@ -197,7 +183,7 @@ const Dashboard = () => {
       })
       .catch((error) => {
         console.error("Check-out error:", error);
-        toast.error(`Failed to check out truck: ${error}`);
+        toast.error(`Failed to check out truck`);
       });
   };
 
@@ -259,13 +245,12 @@ const Dashboard = () => {
       label: "Status",
       render: (truck) => (
         <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-            truck.status === "completed"
-              ? "bg-green-100 text-green-800"
-              : truck.status === "in_progress"
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${truck.status === "completed"
+            ? "bg-green-100 text-green-800"
+            : truck.status === "in_progress"
               ? "bg-teal-100 text-teal-800"
               : "bg-yellow-100 text-yellow-800"
-          }`}
+            }`}
         >
           {truck.status?.replace("_", " ") || "waiting"}
         </span>
@@ -289,6 +274,37 @@ const Dashboard = () => {
       label: "Notes",
       render: (truck) => truck.notes || "-",
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (truck) => (
+        <div className="">
+          {checkpoint.checkpoint_id !== 8 && (
+            <button
+              onClick={() => {
+                setSelectedTruckId(truck.truck_id);
+                setShowCheckInForm(true);
+              }}
+              disabled={isActionLoading}
+              className="flex items-center justify-center rounded-md bg-teal-600 px-3 py-1 text-sm text-white hover:bg-teal-700 disabled:bg-teal-300"
+            >
+              Check-In
+            </button>
+          )}
+
+          {checkpoint.checkpoint_id === 8 && (
+            <button
+              onClick={() => setShowCheckOutForm(true)}
+              // disabled={isActionLoading || trucksArray.length === 0}
+              className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
+            >
+              <i className="ri-logout-box-line mr-2"></i>
+              Check-Out Truck
+            </button>
+          )}
+        </div>
+      )
+    }
   ];
 
   // If operator has no checkpoint assigned
@@ -344,7 +360,7 @@ const Dashboard = () => {
           ) : (
             <>
               Checkpoint:{" "}
-              {getCheckpointName(checkpoint?.checkpoint_id) || "Loading..."}
+              {checkpoint?.name || "Loading..."}
               {checkpoint?.description && (
                 <span className="ml-2 text-sm text-gray-500">
                   ({checkpoint.description})
@@ -366,22 +382,6 @@ const Dashboard = () => {
               Create New Truck
             </button>
           )}
-          <button
-            onClick={() => setShowCheckInForm(true)}
-            disabled={isActionLoading}
-            className="flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:bg-teal-300 w-full sm:w-auto"
-          >
-            <i className="ri-login-box-line mr-2"></i>
-            Check-In Truck
-          </button>
-          <button
-            onClick={() => setShowCheckOutForm(true)}
-            disabled={isActionLoading || trucksArray.length === 0}
-            className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
-          >
-            <i className="ri-logout-box-line mr-2"></i>
-            Check-Out Truck
-          </button>
         </div>
 
         {/* Show next checkpoint information */}
@@ -401,7 +401,7 @@ const Dashboard = () => {
       {/* Current Trucks */}
       <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-gray-800">
-          Trucks at {getCheckpointName(checkpoint?.checkpoint_id)}
+          Trucks at {checkpoint?.name}
         </h2>
 
         {isLoading ? (
@@ -422,13 +422,12 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                          truck.status === "completed"
-                            ? "bg-green-100 text-green-800"
-                            : truck.status === "in_progress"
+                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${truck.status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : truck.status === "in_progress"
                             ? "bg-teal-100 text-teal-800"
                             : "bg-yellow-100 text-yellow-800"
-                        }`}
+                          }`}
                       >
                         {truck.status?.replace("_", " ") || "waiting"}
                       </span>
@@ -446,6 +445,28 @@ const Dashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {truck.notes || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {checkpoint.checkpoint_id !== 8 && (
+                        <button
+                          onClick={() => { setSelectedTruckId(truck.truck_id); setShowCheckInForm(true) }}
+                          disabled={isActionLoading}
+                          className="flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:bg-teal-300 w-full sm:w-auto"
+                        >
+                          <i className="ri-login-box-line mr-2"></i>
+                          Check-In Truck
+                        </button>
+                      )}
+                      {truck.checkpoint_id === 8 && (
+                        <button
+                          onClick={() => {setSelectedTruckId(truck.truck_id); setShowCheckOutForm(true)}}
+                          // disabled={isActionLoading || trucksArray.length === 0}
+                          className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
+                        >
+                          <i className="ri-logout-box-line mr-2"></i>
+                          Check-Out Truck
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -553,25 +574,6 @@ const Dashboard = () => {
             <form onSubmit={handleCheckIn}>
               <div className="mb-4">
                 <label
-                  htmlFor="truckId"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Truck ID
-                </label>
-                <input
-                  type="text"
-                  id="truckId"
-                  name="truckId"
-                  value={formData.truckId}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                  placeholder="Enter truck ID (e.g., PB08CP3901)"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
                   htmlFor="notes"
                   className="mb-1 block text-sm font-medium text-gray-700"
                 >
@@ -630,33 +632,6 @@ const Dashboard = () => {
               {getCheckpointName(checkpoint?.checkpoint_id)}
             </h2>
             <form onSubmit={handleCheckOut}>
-              <div className="mb-4">
-                <label
-                  htmlFor="truckId"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Select Truck
-                </label>
-                <select
-                  id="truckId"
-                  name="truckId"
-                  value={formData.truckId}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                  required
-                >
-                  <option value="">Select a truck</option>
-                  {trucksArray.map((truck) => (
-                    <option
-                      key={truck.truck_id || truck.id}
-                      value={truck.truck_id || truck.id}
-                    >
-                      {truck.identifier}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="mb-4">
                 <label
                   htmlFor="notes"

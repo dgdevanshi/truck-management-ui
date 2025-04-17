@@ -45,19 +45,21 @@ export const logTruckAction = createAsyncThunk(
       // Get the current state to access the checkpoint ID if not provided
       const state = thunkAPI.getState();
 
-      // Ensure checkpoint_id is included in the request
-      if (!logData.checkpoint_id && state.operator.checkpoint) {
-        logData.checkpoint_id = state.operator.checkpoint.id;
+      if (logData.action === "check_in") {
+        // Ensure checkpoint_id is included in the request
+        if (!logData.checkpoint_id && state.operator.checkpoint) {
+          logData.checkpoint_id = state.operator.checkpoint.id;
+        }
+
+        // Validate that we have a checkpoint_id
+        if (!logData.checkpoint_id) {
+          return thunkAPI.rejectWithValue("No checkpoint ID provided");
+        }
       }
 
       // Validate that we have a truck_id
       if (!logData.truck_id) {
         return thunkAPI.rejectWithValue("No truck ID provided");
-      }
-
-      // Validate that we have a checkpoint_id
-      if (!logData.checkpoint_id) {
-        return thunkAPI.rejectWithValue("No checkpoint ID provided");
       }
 
       // Make sure the action is using the correct format for the backend API
@@ -70,9 +72,7 @@ export const logTruckAction = createAsyncThunk(
 
       // Validate that we have a valid action
       if (logData.action !== "checkin" && logData.action !== "checkout") {
-        return thunkAPI.rejectWithValue(
-          "Invalid action - must be checkin or checkout"
-        );
+        return thunkAPI.rejectWithValue("Invalid action - must be checkin or checkout");
       }
 
       "Sending truck action with data:", logData;
