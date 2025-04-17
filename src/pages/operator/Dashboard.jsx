@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import {
   getAssignedCheckpoint,
   getCheckpointTrucks,
   logTruckAction,
   createTruck,
   reset,
+  getAllFactoryTrucks,
 } from "../../features/operator/operatorSlice";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ResponsiveTable from "../../components/ResponsiveTable";
@@ -27,6 +29,7 @@ const Dashboard = () => {
     isSuccess,
     isError,
     message,
+    allTrucks,
   } = useSelector((state) => state.operator);
 
   const [showCheckInForm, setShowCheckInForm] = useState(false);
@@ -45,6 +48,7 @@ const Dashboard = () => {
   const [hasNoCheckpoint, setHasNoCheckpoint] = useState(false);
   const [nextCheckpoint, setNextCheckpoint] = useState(null);
   const [selectedTruckId, setSelectedTruckId] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
     // Get assigned checkpoint and trucks
@@ -60,6 +64,9 @@ const Dashboard = () => {
 
         // Now fetch trucks at this checkpoint
         dispatch(getCheckpointTrucks());
+
+        // Fetch all trucks in the factory
+        dispatch(getAllFactoryTrucks())
       })
       .catch((error) => {
         console.error("Error in getAssignedCheckpoint:", error);
@@ -220,6 +227,7 @@ const Dashboard = () => {
 
   // Ensure trucks is always an array
   const trucksArray = Array.isArray(trucks) ? trucks : [];
+  const allFactoryTrucksArray = Array.isArray(allTrucks) ? allTrucks : [];
 
   // Format date for display
   const formatTime = (dateString) => {
@@ -288,7 +296,7 @@ const Dashboard = () => {
               disabled={isActionLoading}
               className="flex items-center justify-center rounded-md bg-teal-600 px-3 py-1 text-sm text-white hover:bg-teal-700 disabled:bg-teal-300"
             >
-              Check-In
+              Check-Out
             </button>
           )}
 
@@ -299,12 +307,51 @@ const Dashboard = () => {
               className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
             >
               <i className="ri-logout-box-line mr-2"></i>
-              Check-Out Truck
+              Check-Out
             </button>
           )}
         </div>
       )
     }
+  ];
+
+  // Update the table headers to show the current checkpoint information
+  const table2Headers = [
+    { key: "identifier", label: "Truck ID" },
+    {
+      key: "status",
+      label: "Status",
+      render: (truck) => (
+        <span
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${truck.status === "completed"
+            ? "bg-green-100 text-green-800"
+            : truck.status === "in_progress"
+              ? "bg-teal-100 text-teal-800"
+              : "bg-yellow-100 text-yellow-800"
+            }`}
+        >
+          {truck.status?.replace("_", " ") || "waiting"}
+        </span>
+      ),
+    },
+    {
+      key: "current_checkpoint",
+      label: "Current Checkpoint",
+      render: (truck) => getCheckpointName(truck.checkpoint_id) || "-",
+    },
+    {
+      key: "next_checkpoint",
+      label: "Next Checkpoint",
+      render: (truck) => {
+        const nextCp = getNextCheckpointId(truck.checkpoint_id);
+        return nextCp ? getCheckpointName(nextCp) : "Final Checkpoint";
+      },
+    },
+    {
+      key: "notes",
+      label: "Notes",
+      render: (truck) => truck.notes || "-",
+    },
   ];
 
   // If operator has no checkpoint assigned
@@ -454,12 +501,12 @@ const Dashboard = () => {
                           className="flex items-center justify-center rounded-md bg-teal-600 px-4 py-2 text-white hover:bg-teal-700 disabled:bg-teal-300 w-full sm:w-auto"
                         >
                           <i className="ri-login-box-line mr-2"></i>
-                          Check-In Truck
+                          Check-Out Truck
                         </button>
                       )}
                       {truck.checkpoint_id === 8 && (
                         <button
-                          onClick={() => {setSelectedTruckId(truck.truck_id); setShowCheckOutForm(true)}}
+                          onClick={() => { setSelectedTruckId(truck.truck_id); setShowCheckOutForm(true) }}
                           // disabled={isActionLoading || trucksArray.length === 0}
                           className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
                         >
@@ -476,6 +523,79 @@ const Dashboard = () => {
               checkpoint?.checkpoint_id
             )}`}
           />
+        )}
+      </div>
+
+      {/* Factory Trucks */}
+      <div className="mt-4 rounded-lg bg-white shadow-sm">
+        {/* Header with toggle button */}
+        <div
+          className="flex cursor-pointer items-center justify-between px-4 py-4 md:px-6"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <h2 className="text-lg font-semibold text-gray-800">
+            Trucks in the Factory
+          </h2>
+          {isCollapsed ? (
+            <ChevronRight className="h-5 w-5 text-gray-500" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-gray-500" />
+          )}
+        </div>
+
+        {/* Collapsible content */}
+        {!isCollapsed && (
+          <div className="px-4 pb-4 md:px-6">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <ResponsiveTable
+                headers={table2Headers}
+                data={allFactoryTrucksArray}
+                renderRow={(truck, index, viewType) => {
+                  if (viewType === "table") {
+                    return (
+                      <tr
+                        key={truck.truck_id || truck.id}
+                        className="hover:bg-gray-50"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {truck.identifier}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${truck.status === "completed"
+                              ? "bg-green-100 text-green-800"
+                              : truck.status === "in_progress"
+                                ? "bg-teal-100 text-teal-800"
+                                : "bg-yellow-100 text-yellow-800"
+                              }`}
+                          >
+                            {truck.status?.replace("_", " ") || "waiting"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {getCheckpointName(truck.checkpoint_id) || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {(() => {
+                            const nextCp = getNextCheckpointId(truck.checkpoint_id);
+                            return nextCp
+                              ? getCheckpointName(nextCp)
+                              : "Final Checkpoint";
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {truck.notes || "-"}
+                        </td>
+                      </tr>
+                    );
+                  }
+                }}
+                emptyMessage={`No trucks in the factory`}
+              />
+            )}
+          </div>
         )}
       </div>
 
@@ -569,7 +689,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 md:p-6 shadow-lg max-h-[90vh] overflow-y-auto">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">
-              Check-In Truck at {getCheckpointName(checkpoint?.checkpoint_id)}
+              Check-Out Truck at {getCheckpointName(checkpoint?.checkpoint_id)}
             </h2>
             <form onSubmit={handleCheckIn}>
               <div className="mb-4">
@@ -594,7 +714,7 @@ const Dashboard = () => {
                 <div className="mb-4 p-3 bg-yellow-50 rounded-md">
                   <p className="text-sm text-yellow-800">
                     <i className="ri-information-line mr-1"></i>
-                    After check-in, this truck will move to:{" "}
+                    After check-out, this truck will move to:{" "}
                     <span className="font-medium">
                       {getCheckpointName(nextCheckpoint)}
                     </span>
@@ -615,7 +735,7 @@ const Dashboard = () => {
                   disabled={isActionLoading}
                   className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:bg-teal-300 w-full sm:w-auto"
                 >
-                  {isActionLoading ? "Processing..." : "Check-In"}
+                  {isActionLoading ? "Processing..." : "Check-Out"}
                 </button>
               </div>
             </form>

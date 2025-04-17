@@ -119,6 +119,25 @@ export const createTruck = createAsyncThunk(
   }
 );
 
+export const getAllFactoryTrucks = createAsyncThunk(
+  "operator/getAllTrucks",
+  async (_, thunkAPI) => {
+    try {
+      ("Calling getAllFactoryTrucks from operatorService");
+      const result = await operatorService.getAllFactoryTrucks();
+      "getAllFactoryTrucks result:", result;
+      return result;
+    } catch (error) {
+      console.error("Error in getAllFactoryTrucks thunk:", error);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch checkpoint trucks";
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 const initialState = {
   checkpoint: null,
   trucks: [],
@@ -127,6 +146,7 @@ const initialState = {
   isSuccess: false,
   isError: false,
   message: "",
+  allTrucks: [],
 };
 
 const operatorSlice = createSlice({
@@ -191,7 +211,20 @@ const operatorSlice = createSlice({
         state.isActionLoading = false;
         state.isError = true;
         state.message = action.payload;
-      });
+      })
+      .addCase(getAllFactoryTrucks.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getAllFactoryTrucks.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Ensure trucks is always an array
+        state.allTrucks = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(getAllFactoryTrucks.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
   },
 });
 

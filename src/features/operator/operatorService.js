@@ -146,12 +146,48 @@ const createTruck = async (truckData) => {
   }
 };
 
+// Get trucks at the operator's checkpoint
+const getAllFactoryTrucks = async () => {
+  try {
+    ("🚚 API Call: Get Checkpoint Trucks");
+    `GET ${API_URL}/operator/all-trucks`;
+
+    const response = await axios.get(`${API_URL}/operator/trucks`, {
+      headers: getHeaders(),
+    });
+
+    "Response Status:", response.status;
+    "Response Data:", response.data;
+    // Get the operator's assigned checkpoint
+    const checkpointResponse = await getAssignedCheckpoint();
+    const operatorCheckpointId = checkpointResponse.checkpoint_id;
+
+    // Filter trucks to only show those at the operator's checkpoint
+    let trucks = Array.isArray(response.data) ? response.data : [];
+
+    // IMPORTANT: We no longer modify the checkpoint_id here
+    // Let the UI handle the display logic of current/next checkpoints
+
+    `Filtered trucks for checkpoint ${operatorCheckpointId}:`, trucks;
+    return trucks;
+  } catch (error) {
+    ("❌ API Error: Get Checkpoint Trucks");
+    console.error("Error Status:", error.response?.status);
+    console.error("Error Data:", error.response?.data);
+    console.error("Error Message:", error.message);
+    console.error("Full Error:", error);
+
+    throw error;
+  }
+};
+
 // Make sure all functions are properly exported
 const operatorService = {
   getAssignedCheckpoint,
   getCheckpointTrucks,
   logTruckAction,
   createTruck,
+  getAllFactoryTrucks
 };
 
 export default operatorService;
