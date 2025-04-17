@@ -149,6 +149,8 @@ const Dashboard = () => {
 
         // Refresh the truck list
         dispatch(getCheckpointTrucks());
+        // Refresh the factory trucks list
+        dispatch(getAllFactoryTrucks());
       })
       .catch((error) => {
         console.error("Check-in error:", error);
@@ -187,6 +189,8 @@ const Dashboard = () => {
 
         // Refresh the truck list
         dispatch(getCheckpointTrucks());
+        // Refresh the factory trucks list
+        dispatch(getAllFactoryTrucks());
       })
       .catch((error) => {
         console.error("Check-out error:", error);
@@ -218,6 +222,8 @@ const Dashboard = () => {
         // Only refresh the truck list if the operator is at checkpoint 1
         if (checkpoint && checkpoint.checkpoint_id === 1) {
           dispatch(getCheckpointTrucks());
+          // Refresh the factory trucks list
+          dispatch(getAllFactoryTrucks());
         }
       })
       .catch((error) => {
