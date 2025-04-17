@@ -296,18 +296,21 @@ const Dashboard = () => {
               disabled={isActionLoading}
               className="flex items-center justify-center rounded-md bg-teal-600 px-3 py-1 text-sm text-white hover:bg-teal-700 disabled:bg-teal-300"
             >
-              Check-Out
+              Check-Out Truck
             </button>
           )}
 
           {checkpoint.checkpoint_id === 8 && (
             <button
-              onClick={() => setShowCheckOutForm(true)}
+              onClick={() => {
+                setSelectedTruckId(truck.truck_id);
+                setShowCheckOutForm(true)
+              }}
               // disabled={isActionLoading || trucksArray.length === 0}
               className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300 w-full sm:w-auto"
             >
               <i className="ri-logout-box-line mr-2"></i>
-              Check-Out
+              Check-Out Truck
             </button>
           )}
         </div>
