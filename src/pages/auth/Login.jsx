@@ -79,10 +79,10 @@ const Login = () => {
     e.preventDefault();
     ("Login form submitted");
 
-    if (!validate()) {
-      "Form validation failed", errors;
-      return;
-    }
+    // if (!validate()) {
+    //   "Form validation failed", errors;
+    //   return;
+    // }
 
     ("Dispatching login action");
     dispatch(login(formData));
@@ -100,22 +100,22 @@ const Login = () => {
             htmlFor="email"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Email
+            Email or Phone
           </label>
           <input
-            type="email"
+            type="text"
             id="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full rounded-md border ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            } px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500`}
-            placeholder="Enter your email"
+            className={`w-full rounded-md border 
+            px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500`}
+            placeholder="Enter your email or phone"
           />
-          {errors.email && (
+          {/* ${errors.email ? "border-red-500" : "border-gray-300"} */}
+          {/* {errors.email && (
             <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-          )}
+          )} */}
         </div>
 
         <div className="mb-6">

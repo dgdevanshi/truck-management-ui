@@ -131,10 +131,14 @@ const UserManagement = () => {
       newErrors.name = "Name is required";
     }
 
+    // if (!registerData.email) {
+    //   newErrors.email = "Email is required";
+    // } else if (!/\S+@\S+\.\S+/.test(registerData.email)) {
+    //   newErrors.email = "Email is invalid";
+    // }
+
     if (!registerData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(registerData.email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.role = "Email or Phone is required";
     }
 
     if (!registerData.password) {
@@ -388,10 +392,10 @@ const UserManagement = () => {
                   htmlFor="register-email"
                   className="mb-1 block text-sm font-medium text-gray-700"
                 >
-                  Email
+                  Email or Phone
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   id="register-email"
                   name="email"
                   value={registerData.email}
@@ -399,11 +403,11 @@ const UserManagement = () => {
                   className={`w-full rounded-md border ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   } px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500`}
-                  placeholder="Enter user's email"
+                  placeholder="Enter user's email or phone"
                 />
-                {errors.email && (
+                {/* {errors.email && (
                   <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-                )}
+                )} */}
               </div>
 
               <div className="mb-4">
